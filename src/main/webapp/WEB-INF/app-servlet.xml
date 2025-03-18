@@ -10,9 +10,32 @@
     <mvc:default-servlet-handler/>
 
 
+    <bean class="org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping" id="handlerMapping"/>
     <bean class="org.springframework.web.servlet.view.InternalResourceViewResolver" id="viewResolver">
         <property name="prefix" value="/WEB-INF/views/"/>
         <property name="suffix" value=".jsp"/>
+    </bean>
+
+    <bean class="com.zaxxer.hikari.HikariDataSource" id="datasource">
+        <property name="driverClassName" value="com.mysql.jdbc.Driver"/>
+        <property name="jdbcUrl" value="jdbc:mysql://database-1.c1c0momec8jp.ap-northeast-2.rds.amazonaws.com:3306/studymate"/>
+        <property name="username" value="admin"/>
+        <property name="password" value="1q2w3e4r"/>
+    </bean>
+
+    <bean class="org.mybatis.spring.SqlSessionFactoryBean" id="sessionFactory">
+        <property name="typeAliasesPackage" value="org.codenova.studymate.model"/>
+        <property name="mapperLocations" value="/WEB-INF/mappers/*-mapper.xml"/>
+        <property name="dataSource" ref="datasource"/>
+        <property name="configuration">
+           <bean class="org.apache.ibatis.session.Configuration">
+               <property name="mapUnderscoreToCamelCase" value="true"/>
+           </bean>
+        </property>
+    </bean>
+
+    <bean class="org.mybatis.spring.SqlSessionTemplate" id="sqlSessionTemplate">
+        <constructor-arg name="sqlSessionFactory" ref="sessionFactory"/>
     </bean>
 
 </beans>
