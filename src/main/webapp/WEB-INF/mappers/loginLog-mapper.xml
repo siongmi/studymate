@@ -12,5 +12,4 @@
     <select id="findLatestByUserId" parameterType="string" resultType="loginLog">
         select * from login_logs where user_id=#{userId} order by login_at desc limit 1
     </select>
-
 </mapper>

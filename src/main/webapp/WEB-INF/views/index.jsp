@@ -18,7 +18,7 @@
         </a>
     </div>
 </div>
-<div class="main">
+<div class="index-main">
     <div class="w-50">
 
         <img src="${pageContext.request.contextPath}/image/logo.png" style="width: 500px"/>
