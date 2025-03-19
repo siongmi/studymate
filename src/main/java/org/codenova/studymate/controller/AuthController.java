@@ -69,12 +69,20 @@ public class AuthController {
         } else {
             userRepository.updateLoginCountByUserId(id);
             loginLogRepository.create(id);
+
             session.setAttribute("user", found);
-            LoginLog latest = loginLogRepository.findLatestByUserId(id);
-            System.out.println(latest);
+
             return "redirect:/index";
         }
     }
+
+    @RequestMapping("/logout")
+    public String logoutHandle(HttpSession session) {
+        // session.removeAttribute("user");
+        session.invalidate();
+        return "redirect:/index";
+    }
+
 
 
 }
