@@ -11,10 +11,7 @@ import org.codenova.studymate.repository.UserRepository;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.SessionAttribute;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -58,14 +55,14 @@ public class StudyController {
 
     @RequestMapping("/search")
     public String searchHandle(@RequestParam("word") Optional<String> word, Model model) {
-        if(word.isEmpty()) {
+        if (word.isEmpty()) {
             return "redirect:/";
         }
         String wordValue = word.get();
-        List<StudyGroup> result = studyGroupRepository.findByNameLikeOrGoalLike("%"+wordValue+"%");
+        List<StudyGroup> result = studyGroupRepository.findByNameLikeOrGoalLike("%" + wordValue + "%");
         List<StudyGroupWithCreator> convertedResult = new ArrayList<>();
 
-        for(StudyGroup one : result) {
+        for (StudyGroup one : result) {
             User found = userRepository.findById(one.getCreatorId());
 
             StudyGroupWithCreator c = StudyGroupWithCreator.builder().group(one).creator(found).build();
@@ -83,5 +80,44 @@ public class StudyController {
         return "study/search";
     }
 
+    @RequestMapping("/{id}")
+    public String viewHandle(@PathVariable("id") String id, Model model) {
+        System.out.println(id);
 
+        StudyGroup group = studyGroupRepository.findById(id);
+        if (group == null) {
+            return "redirect:/";
+        }
+
+        model.addAttribute("group", group);
+
+        return "study/view";
+    }
+
+    @Transactional
+    @RequestMapping("/{id}/join")
+    public String joinHandle(@PathVariable("id") String id, @SessionAttribute("user") User user) {
+
+        boolean r = false;
+        for (StudyMember member : studyMemberRepository.findById(id)) {
+            if (member.getUserId().equals(user.getId())) {
+                r = true;
+                break;
+            }
+        }
+        if (!r) {
+            StudyMember member = StudyMember.builder().
+                    userId(user.getId()).groupId(id).role("멤버").build();
+            StudyGroup group = studyGroupRepository.findById(id);
+            if (group.getType().equals("공개")) {
+                studyMemberRepository.createApproved(member);
+                studyGroupRepository.addMemberCountById(id);
+            } else {
+                studyMemberRepository.createPending(member);
+            }
+            return "redirect:/study/" + id;
+        }
+        return "redirect:/study/" + id;
+
+    }
 }

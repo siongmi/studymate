@@ -5,6 +5,8 @@ import org.codenova.studymate.model.entity.StudyMember;
 import org.mybatis.spring.SqlSessionTemplate;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
+
 @Repository
 @AllArgsConstructor
 public class StudyMemberRepository {
@@ -20,5 +22,8 @@ public class StudyMemberRepository {
 
     public int updateJoinedAtById(int id) {
         return sqlSessionTemplate.update("studyMember.updateJoinedAtById", id);
+    }
+    public List<StudyMember> findById(String id){
+        return  sqlSessionTemplate.selectList("studyMember.findById", id);
     }
 }

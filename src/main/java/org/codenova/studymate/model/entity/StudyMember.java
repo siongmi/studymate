@@ -1,12 +1,15 @@
 package org.codenova.studymate.model.entity;
 
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 import java.time.LocalDateTime;
 
 @Setter
 @Getter
+@AllArgsConstructor
+@Builder
+@NoArgsConstructor
+
 public class StudyMember {
     private String id;
     private String userId;
