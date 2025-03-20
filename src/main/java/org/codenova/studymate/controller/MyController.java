@@ -2,8 +2,8 @@ package org.codenova.studymate.controller;
 
 
 import lombok.AllArgsConstructor;
-import org.codenova.studymate.model.LoginLog;
-import org.codenova.studymate.model.User;
+import org.codenova.studymate.model.entity.LoginLog;
+import org.codenova.studymate.model.entity.User;
 import org.codenova.studymate.repository.AvatarRepository;
 import org.codenova.studymate.repository.LoginLogRepository;
 import org.springframework.lang.Nullable;
