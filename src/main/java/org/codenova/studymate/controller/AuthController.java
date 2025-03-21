@@ -51,6 +51,7 @@ public class AuthController {
 
     @RequestMapping("/login")
     public String loginHandle(Model model) {
+
         return "auth/login";
     }
 
