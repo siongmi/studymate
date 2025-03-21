@@ -20,4 +20,7 @@
         </select>
         <delete id="deleteById" parameterType="int"> delete from study_members where id = #{id}
         </delete>
+        <delete id="deleteByGroupId" parameterType="string">
+                delete from study_members where group_id = #{groupId}
+        </delete>
 </mapper>

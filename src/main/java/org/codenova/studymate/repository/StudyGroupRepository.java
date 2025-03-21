@@ -20,6 +20,10 @@ public class StudyGroupRepository {
         return sqlSessionTemplate.update("studyGroup.addMemberCountById", id);
     }
 
+    public int subtractMemberCountById(String id){
+        return sqlSessionTemplate.update("studyGroup.subtractMemberCountById", id);
+    }
+
     public List<StudyGroup> findByNameLikeOrGoalLike(String word){
         return sqlSessionTemplate.selectList("studyGroup.findByNameLikeOrGoalLike", word);
     }
@@ -27,8 +31,11 @@ public class StudyGroupRepository {
     public StudyGroup findById(String id){
         return sqlSessionTemplate.selectOne("studyGroup.findById", id);
     }
-    public int substractMemberCountById(String id){
-        return  sqlSessionTemplate.delete("studyGroup.substractMemberCountById", id);
+
+    public int deleteById(String id) {
+        return sqlSessionTemplate.delete("studyGroup.deleteById", id);
     }
+
+
 
 }

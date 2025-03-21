@@ -148,6 +148,7 @@ public class StudyController {
         return "redirect:/study/" + id;
     }
 
+
     // 탈퇴 요청 처리 핸들러
     @RequestMapping("/{groupId}/leave")
     public String leaveHandle(@PathVariable("groupId") String groupId, @SessionAttribute("user") User user, Model model) {
@@ -157,10 +158,10 @@ public class StudyController {
         StudyMember found = studyMemberRepository.findByUserIdAndGroupId(map);
         studyMemberRepository.deleteById(found.getId());
 
-        studyGroupRepository.substractMemberCountById(groupId);
-
+        studyGroupRepository.subtractMemberCountById(groupId);
         return "redirect:/";
     }
+
     // 신청 철회 요청 핸들러
     @RequestMapping("/{groupId}/cancel")
     public String cancelHandle(@PathVariable("groupId") String groupId, @SessionAttribute("user") User user, Model model) {
@@ -168,15 +169,40 @@ public class StudyController {
         Map map = Map.of("groupId", groupId, "userId", userId);
 
         StudyMember found = studyMemberRepository.findByUserIdAndGroupId(map);
-        if(found != null && found.getJoinedAt() == null && found.getRole().equals("멤버")){
-
+        if(found != null && found.getJoinedAt() == null && found.getRole().equals("멤버"))  {
+            studyMemberRepository.deleteById(found.getId());
         }
-        studyMemberRepository.deleteById(found.getId());
 
         return "redirect:/study/" + groupId;
     }
 
+    @Transactional
+    @RequestMapping("/{groupId}/remove")
+    public String removeHandle(@PathVariable("groupId") String groupId, @SessionAttribute("user") User user) {
+        StudyGroup studyGroup = studyGroupRepository.findById(groupId);
 
+        if(studyGroup != null && studyGroup.getCreatorId().equals(user.getId())) {
+            studyMemberRepository.deleteByGroupId(groupId);
+            studyGroupRepository.deleteById(groupId);
+            return "redirect:/";
+        }else {
+            return "redirect:/study/" + groupId;
+        }
+    }
 
+    @RequestMapping("/{groupId}/approve")
+    public String approveHandle(@PathVariable("groupId") String groupId,
+                                @RequestParam("targetUserId") String targetUserId) {
+
+        StudyMember found = studyMemberRepository.findByUserIdAndGroupId(
+                Map.of("userId", targetUserId, "groupId", groupId)
+        );
+
+        if(found != null) {
+            studyMemberRepository.updateJoinedAtById(found.getId());
+        }
+
+        return "redirect:/study/" + groupId;
+    }
 
 }
