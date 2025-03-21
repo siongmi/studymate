@@ -24,10 +24,18 @@ public class StudyMemberRepository {
     public int updateJoinedAtById(int id) {
         return sqlSessionTemplate.update("studyMember.updateJoinedAtById", id);
     }
-    public List<StudyMember> findById(String id){
-        return  sqlSessionTemplate.selectList("studyMember.findById", id);
+
+
+    public List<StudyMember>findByUserId(String userId) {
+        return sqlSessionTemplate.selectList("studyMember.findByUserId", userId);
     }
-    public StudyMember findByUserIdAndGroupId(Map params){
+
+    public StudyMember findByUserIdAndGroupId(Map params) {
         return sqlSessionTemplate.selectOne("studyMember.findByUserIdAndGroupId", params);
     }
+    public int deleteById(int id){
+        return sqlSessionTemplate.delete("studyMember.deleteById", id);
+    }
+
+
 }

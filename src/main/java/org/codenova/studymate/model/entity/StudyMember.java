@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 
 public class StudyMember {
-    private String id;
+    private int id;
     private String userId;
     private String groupId;
     private String role;
