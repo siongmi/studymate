@@ -4,6 +4,7 @@ package org.codenova.studymate.controller;
 import lombok.AllArgsConstructor;
 import org.codenova.studymate.model.entity.LoginLog;
 import org.codenova.studymate.model.entity.User;
+import org.codenova.studymate.model.query.UserWithAvatar;
 import org.codenova.studymate.repository.AvatarRepository;
 import org.codenova.studymate.repository.LoginLogRepository;
 import org.springframework.lang.Nullable;
@@ -19,7 +20,7 @@ public class MyController {
     private LoginLogRepository loginLogRepository;
     private AvatarRepository avatarRepository;
     @RequestMapping("/profile")
-    public String profileHandle(Model model, @SessionAttribute("user") @Nullable User user) {
+    public String profileHandle(Model model, @SessionAttribute("user") @Nullable UserWithAvatar user) {
         // User user =(User)session.getAttribute("user");
         if(user == null) {
             return "redirect:/auth/login";
@@ -28,7 +29,8 @@ public class MyController {
         model.addAttribute("hiddenId", user.getId().substring(0, 2)+"******");
         LoginLog latestLog =loginLogRepository.findLatestByUserId(user.getId());
         model.addAttribute("latestLog",latestLog);
-        model.addAttribute("userAvatar", avatarRepository.findById(user.getAvatarId()));
+
+
         return "my/profile";
     }
 }

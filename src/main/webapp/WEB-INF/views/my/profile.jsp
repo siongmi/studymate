@@ -10,13 +10,13 @@
     <div class="index-header wrap">
         <div>
             <a href="${pageContext.request.contextPath}/index">
-                <img src="${pageContext.request.contextPath}/image/logoo.png" style="height: 40px"/>
+                <img src="${pageContext.request.contextPath}/image/header-logo.png" style="height: 35px"/>
             </a>
 
         </div>
         <div>
             <a href="${pageContext.request.contextPath}/my/profile">
-                <img src="${pageContext.request.contextPath}${userAvatar.imageUrl}" style="height: 50px"/>
+                <img src="${pageContext.request.contextPath}${user.avatarUrl}" style="height: 35px"/>
             </a>
         </div>
     </div>
@@ -38,22 +38,22 @@
             <div class="account">
                 <h3>로그인 계정</h3>
                 <ul>
-                    <li>아이디 <span>${user.id}</span></li>
-                    <li>활동명 <span>${user.name}</span></li>
+                    <li>아이디 <span>${user.id }</span></li>
+                    <li>활동명 <span>${user.name }</span></li>
                 </ul>
             </div>
             <div class="info">
                 <h3>로그인 내역</h3>
                 <ul>
-                    <li>로그인 횟수 <span>${user.loginCount}</span></li>
-                    <li>최근 로그인 <span>${latestLog.loginAt.toString().replace('T',' ')}</span></li>
+                    <li>로그인 회수 <span>${user.loginCount}</span></li>
+                    <li>최근 로그인 <span>${latestLog.loginAt.toString().replace('T', '  ')}</span></li>
                 </ul>
             </div>
             <div class="info">
                 <h3>활동 내역</h3>
                 <ul>
-                    <li>참여한 그룹 <span>--</span></li>
-                    <li>총 공부시간 <span>${user.studyTime}</span></li>
+                    <li>참여한 그룹 <span>-</span></li>
+                    <li>총 공부시간 <span>${user.studyTime}</span>h</li>
                 </ul>
             </div>
         </div>

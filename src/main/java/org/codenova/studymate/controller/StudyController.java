@@ -2,18 +2,19 @@ package org.codenova.studymate.controller;
 
 import lombok.AllArgsConstructor;
 import org.apache.ibatis.annotations.Select;
-import org.codenova.studymate.model.entity.StudyGroup;
-import org.codenova.studymate.model.entity.StudyMember;
-import org.codenova.studymate.model.entity.User;
+import org.codenova.studymate.model.entity.*;
+import org.codenova.studymate.model.query.UserWithAvatar;
+import org.codenova.studymate.model.vo.PostMeta;
 import org.codenova.studymate.model.vo.StudyGroupWithCreator;
-import org.codenova.studymate.repository.StudyGroupRepository;
-import org.codenova.studymate.repository.StudyMemberRepository;
-import org.codenova.studymate.repository.UserRepository;
+import org.codenova.studymate.repository.*;
+import org.ocpsoft.prettytime.PrettyTime;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.*;
 
 @Controller
@@ -23,9 +24,15 @@ public class StudyController {
     private StudyGroupRepository studyGroupRepository;
     private StudyMemberRepository studyMemberRepository;
     private UserRepository userRepository;
+    private PostRepository postRepository;
+    private AvatarRepository avatarRepository;
+    private PostRectionRepository postRectionRepository;
+
+
 
     @RequestMapping("/create")
     public String createHandle() {
+        System.out.println("create...");
         return "study/create";
     }
 
@@ -33,7 +40,7 @@ public class StudyController {
     @Transactional
     @RequestMapping("/create/verify")
     public String createVerifyHandle(@ModelAttribute StudyGroup studyGroup,
-                                     @SessionAttribute("user") User user) {
+                                     @SessionAttribute("user") UserWithAvatar user) {
         String randomId = UUID.randomUUID().toString().substring(24);
 
         studyGroup.setId(randomId);
@@ -84,9 +91,8 @@ public class StudyController {
 
     // 스터디 상세보기 핸들러
     @RequestMapping("/{id}")
-    public String viewHandle(@PathVariable("id") String id, Model model, @SessionAttribute("user") User user) {
+    public String viewHandle(@PathVariable("id") String id, Model model, @SessionAttribute("user") UserWithAvatar user) {
         // System.out.println(id);
-
         StudyGroup group = studyGroupRepository.findById(id);
         if (group == null) {
             return "redirect:/";
@@ -111,13 +117,33 @@ public class StudyController {
 
         model.addAttribute("group", group);
 
+        List<Post> posts = postRepository.findByGroupId(id);
+        List<PostMeta> postMetas = new ArrayList<>();
+
+        PrettyTime prettyTime = new PrettyTime();
+        for (Post post : posts) {
+//            long b = Duration.between(post.getWroteAt(), LocalDateTime.now()).getSeconds();
+//            System.out.println(b);
+            PostMeta cvt = PostMeta.builder()
+                    .id(post.getId())
+                    .content(post.getContent())
+                    .writerName(userRepository.findById(post.getWriterId()).getName())
+                    .writerAvatar(avatarRepository.findById(userRepository.findById(post.getWriterId()).getAvatarId()).getImageUrl())
+                    .time(prettyTime.format(post.getWroteAt()))
+                    .reactions(postRectionRepository.findByPostId(post.getId()))
+                    .build();
+            postMetas.add(cvt);
+        }
+
+        model.addAttribute("postMetas", postMetas);
+
         return "study/view";
     }
 
 
     @Transactional
     @RequestMapping("/{id}/join")
-    public String joinHandle(@PathVariable("id") String id, @SessionAttribute("user") User user) {
+    public String joinHandle(@PathVariable("id") String id, @SessionAttribute("user") UserWithAvatar user) {
         /*
             StudyMember member = new StudyMember();
             member.setUserId(user.getId());
@@ -151,7 +177,7 @@ public class StudyController {
 
     // 탈퇴 요청 처리 핸들러
     @RequestMapping("/{groupId}/leave")
-    public String leaveHandle(@PathVariable("groupId") String groupId, @SessionAttribute("user") User user, Model model) {
+    public String leaveHandle(@PathVariable("groupId") String groupId, @SessionAttribute("user") UserWithAvatar user, Model model) {
         String userId = user.getId();
         Map map = Map.of("groupId", groupId, "userId", userId);
 
@@ -164,12 +190,12 @@ public class StudyController {
 
     // 신청 철회 요청 핸들러
     @RequestMapping("/{groupId}/cancel")
-    public String cancelHandle(@PathVariable("groupId") String groupId, @SessionAttribute("user") User user, Model model) {
+    public String cancelHandle(@PathVariable("groupId") String groupId, @SessionAttribute("user") UserWithAvatar user, Model model) {
         String userId = user.getId();
         Map map = Map.of("groupId", groupId, "userId", userId);
 
         StudyMember found = studyMemberRepository.findByUserIdAndGroupId(map);
-        if(found != null && found.getJoinedAt() == null && found.getRole().equals("멤버"))  {
+        if (found != null && found.getJoinedAt() == null && found.getRole().equals("멤버")) {
             studyMemberRepository.deleteById(found.getId());
         }
 
@@ -178,31 +204,83 @@ public class StudyController {
 
     @Transactional
     @RequestMapping("/{groupId}/remove")
-    public String removeHandle(@PathVariable("groupId") String groupId, @SessionAttribute("user") User user) {
+    public String removeHandle(@PathVariable("groupId") String groupId, @SessionAttribute("user") UserWithAvatar user) {
         StudyGroup studyGroup = studyGroupRepository.findById(groupId);
 
-        if(studyGroup != null && studyGroup.getCreatorId().equals(user.getId())) {
+        if (studyGroup != null && studyGroup.getCreatorId().equals(user.getId())) {
             studyMemberRepository.deleteByGroupId(groupId);
             studyGroupRepository.deleteById(groupId);
             return "redirect:/";
-        }else {
+        } else {
             return "redirect:/study/" + groupId;
         }
     }
 
     @RequestMapping("/{groupId}/approve")
     public String approveHandle(@PathVariable("groupId") String groupId,
-                                @RequestParam("targetUserId") String targetUserId) {
+                                @RequestParam("targetUserId") String targetUserId,
+                                @SessionAttribute("user") UserWithAvatar user) {
 
-        StudyMember found = studyMemberRepository.findByUserIdAndGroupId(
-                Map.of("userId", targetUserId, "groupId", groupId)
-        );
+        StudyGroup studyGroup = studyGroupRepository.findById(groupId);
 
-        if(found != null) {
-            studyMemberRepository.updateJoinedAtById(found.getId());
+
+        if (studyGroup != null && studyGroup.getCreatorId().equals(user.getId())) {
+            StudyMember found = studyMemberRepository.findByUserIdAndGroupId(
+                    Map.of("userId", targetUserId, "groupId", groupId)
+            );
+
+            if (found != null) {
+                studyMemberRepository.updateJoinedAtById(found.getId());
+                studyGroupRepository.addMemberCountById(groupId);
+            }
         }
 
         return "redirect:/study/" + groupId;
     }
 
+    // 그룹내 새글 등록
+    @RequestMapping("/{groupId}/post")
+    public String postHandle(@PathVariable("groupId") String id,
+                             @ModelAttribute Post post,
+                             @SessionAttribute("user") UserWithAvatar user) {
+        /*
+         모델 attribute 로 파라미터는 받았을텐데, 빠진 정보들이 있을거임. 이걸 추가로 set  .
+         postRepository를 이용해서 create 메서드 작성
+         */
+        post.setWriterId(user.getId());
+        post.setWroteAt(LocalDateTime.now());
+//        post.setGroupId();
+//        post.setContent();
+        postRepository.create(post);
+
+
+        return "redirect:/study/" + id;
+    }
+
+    // 글에 감정 남기기 요청 처리 핸들
+    @RequestMapping("/{groupId}/post/{postId}/reaction")
+    public String postReactionHandle(@ModelAttribute PostReaction postReaction, @SessionAttribute("user") UserWithAvatar user) {
+
+        PostReaction found =
+                postRectionRepository.findByWriterIdAndPostId(Map.of("writerId", user.getId(), "postId", postReaction.getPostId()));
+
+        if (found != null) {
+            postRectionRepository.deleteById(found.getId());
+        }
+
+        postReaction.setWriterId(user.getId());
+        postRectionRepository.create(postReaction);
+
+
+        return "redirect:/study/" + postReaction.getGroupId();
+    }
+
+
+
+
+    @ModelAttribute("user")
+    public UserWithAvatar addUser(@SessionAttribute("user") UserWithAvatar user) {
+        System.out.println("addUser...");
+        return user;
+    }
 }
