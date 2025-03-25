@@ -30,7 +30,8 @@ public class WelcomeController {
         } else {
             model.addAttribute("user", user);
 
-            List<StudyMember> studyList =studyMemberRepository.findByUserId(user.getId());
+            var studyList =studyMemberRepository.findWithGroupDetailByUserId(user.getId());
+
             model.addAttribute("studyList", studyList);
 
 

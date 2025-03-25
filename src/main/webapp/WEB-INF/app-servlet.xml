@@ -1,48 +1,34 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<beans xmlns="http://www.springframework.org/schema/beans"
-       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-       xmlns:context="http://www.springframework.org/schema/context"
-       xmlns:mvc="http://www.springframework.org/schema/mvc" xmlns:tx="http://www.springframework.org/schema/tx"
-       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/context https://www.springframework.org/schema/context/spring-context.xsd http://www.springframework.org/schema/mvc https://www.springframework.org/schema/mvc/spring-mvc.xsd http://www.springframework.org/schema/cache http://www.springframework.org/schema/cache/spring-cache.xsd http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd">
-
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context" xmlns:mvc="http://www.springframework.org/schema/mvc" xmlns:tx="http://www.springframework.org/schema/tx" xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/context https://www.springframework.org/schema/context/spring-context.xsd http://www.springframework.org/schema/mvc https://www.springframework.org/schema/mvc/spring-mvc.xsd http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd">
     <context:component-scan base-package="org.codenova.studymate"/>
     <mvc:annotation-driven/>
     <mvc:default-servlet-handler/>
-
-
     <bean class="org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping" id="handlerMapping"/>
     <bean class="org.springframework.web.servlet.view.InternalResourceViewResolver" id="viewResolver">
         <property name="prefix" value="/WEB-INF/views/"/>
         <property name="suffix" value=".jsp"/>
     </bean>
-
     <bean class="com.zaxxer.hikari.HikariDataSource" id="datasource">
-        <property name="driverClassName" value="com.mysql.jdbc.Driver"/>
+        <property name="driverClassName" value="com.mysql.cj.jdbc.Driver"/>
         <property name="jdbcUrl" value="jdbc:mysql://database-1.c1c0momec8jp.ap-northeast-2.rds.amazonaws.com:3306/studymate"/>
         <property name="username" value="admin"/>
         <property name="password" value="1q2w3e4r"/>
     </bean>
-
-    <bean class="org.mybatis.spring.SqlSessionFactoryBean" id="sessionFactory">
-        <property name="typeAliasesPackage" value="org.codenova.studymate.model"/>
-        <property name="mapperLocations" value="/WEB-INF/mappers/*-mapper.xml"/>
+    <bean class="org.mybatis.spring.SqlSessionFactoryBean" id="sqlSessionFactory">
         <property name="dataSource" ref="datasource"/>
+        <property name="mapperLocations" value="/WEB-INF/mappers/*-mapper.xml"/>
+        <property name="typeAliasesPackage" value="org.codenova.studymate.model"/>
         <property name="configuration">
-           <bean class="org.apache.ibatis.session.Configuration">
-               <property name="mapUnderscoreToCamelCase" value="true"/>
-           </bean>
+            <bean class="org.apache.ibatis.session.Configuration">
+                <property name="mapUnderscoreToCamelCase" value="true"/>
+            </bean>
         </property>
     </bean>
-
     <bean class="org.mybatis.spring.SqlSessionTemplate" id="sqlSessionTemplate">
-        <constructor-arg name="sqlSessionFactory" ref="sessionFactory"/>
+        <constructor-arg name="sqlSessionFactory" ref="sqlSessionFactory"/>
     </bean>
-
-    <!-- related transaction -->
+    <!--  related transaction  -->
     <tx:annotation-driven transaction-manager="transactionManager"/>
     <bean class="org.springframework.jdbc.datasource.DataSourceTransactionManager" id="transactionManager">
         <property name="dataSource" ref="datasource"/>
-
     </bean>
-
 </beans>

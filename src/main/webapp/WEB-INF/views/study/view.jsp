@@ -111,6 +111,7 @@ background-color: #afafaf; color:white" placeholder="스터디 검색" value="${
                   <c:when test="${t.feeling == 'angry'}"><span>😡</span></c:when>
                   <c:otherwise><span>😐</span></c:otherwise>
                 </c:choose>
+                <span>${t.count}</span>
               </c:forEach>
             </div>
           </div>
